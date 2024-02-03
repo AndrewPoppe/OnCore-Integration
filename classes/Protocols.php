@@ -123,6 +123,7 @@ class Protocols
             'oncore_protocol_id' => (string)$this->getEntityRecord()['oncore_protocol_id'],
             'redcap_record_id' => (string)$redcapRecord['id'],
             'oncore_protocol_subject_id' => $subject['protocolSubjectId'],
+            'sequenceNo' => $subject['sequenceNo'],
             'oncore_protocol_subject_status' => $subject['status'] == 'ON STUDY' ? OnCoreIntegration::ONCORE_SUBJECT_ON_STUDY : OnCoreIntegration::ONCORE_SUBJECT_ON_STUDY,
             #'excluded' => OnCoreIntegration::NO,
             'status' => $this->getSubjects()->determineSyncedRecordMatch($subject, $redcapRecord['record'], $fields['pull'])
@@ -140,6 +141,7 @@ class Protocols
                 if ($count > 1) {
                     $data['status'] = OnCoreIntegration::REDCAP_ONLY;
                     $data['oncore_protocol_subject_id'] = null;
+                    $data['sequenceNo'] = null;
                 }
 
                 //entity = (new Entities)->getFactory()->create(OnCoreIntegration::ONCORE_REDCAP_RECORD_LINKAGE, $data);
@@ -162,6 +164,7 @@ class Protocols
             'oncore_protocol_id' => (string)$this->getEntityRecord()['oncore_protocol_id'],
             'redcap_record_id' => (string)$id,
             'oncore_protocol_subject_id' => null,
+            'sequenceNo' => null,
             'status' => OnCoreIntegration::REDCAP_ONLY
         );
         if (!$record) {
@@ -193,6 +196,7 @@ class Protocols
                 'redcap_project_id' => (string)$this->getEntityRecord()['redcap_project_id'],
                 'oncore_protocol_id' => (string)$this->getEntityRecord()['oncore_protocol_id'],
                 'oncore_protocol_subject_id' => $subject['protocolSubjectId'],
+                'sequenceNo' => $subject['sequenceNo'],
                 'oncore_protocol_subject_status' => $subject['status'] == 'ON STUDY' ? OnCoreIntegration::ONCORE_SUBJECT_ON_STUDY : OnCoreIntegration::ONCORE_SUBJECT_ON_STUDY,
                 #'excluded' => OnCoreIntegration::NO,
                 'status' => OnCoreIntegration::ONCORE_ONLY
@@ -867,6 +871,7 @@ class Protocols
                         'oncore_protocol_id' => (string)$this->getEntityRecord()['oncore_protocol_id'],
                         'redcap_record_id' => '',
                         'oncore_protocol_subject_id' => $subject['protocolSubjectId'],
+                        'sequenceNo' => $subject['sequenceNo'],
                         'oncore_protocol_subject_status' => $subject['status'] == 'ON STUDY' ? OnCoreIntegration::ONCORE_SUBJECT_ON_STUDY : OnCoreIntegration::ONCORE_SUBJECT_ON_STUDY,
                         #'excluded' => OnCoreIntegration::NO,
                         'status' => OnCoreIntegration::ONCORE_ONLY

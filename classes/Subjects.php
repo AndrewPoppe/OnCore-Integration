@@ -382,6 +382,9 @@ class Subjects extends SubjectDemographics
                                 $subjects[$key]['demographics'] = $this->getOnCoreSubjectDemographics($subject['subjectDemographicsId'], $this->forceDemographicsPull);
                                 // make it easy to prepare for push/pull
                                 $subjects[$key]['demographics']['studySites'] = $subject['studySite'];
+
+                                // pull in the subject's sequence number
+                                $subjects[$key]['sequenceNo'] = $this->getOnCoreSubjectSequenceNumber($subject['protocolSubjectId'], $protocolId);
                             } catch (\Exception $e) {
                                 Entities::createException($e->getMessage());
                             }
@@ -483,6 +486,34 @@ class Subjects extends SubjectDemographics
 
         return db_fetch_assoc($record);
 
+    }
+    
+    /**
+     * Pull subject's sequence number from OnCore based on the protocol subject id
+     * @return string|null - the sequence number or null on error 
+     */
+    public function getOnCoreSubjectSequenceNumber($protocolSubjectId, $protocolId)
+    {
+        $projectId = $this->getUser()->redcapProjectId;
+        $linkageRecord = $this->getLinkageRecord($projectId, $protocolId, '', $protocolSubjectId);
+        try {
+            if (!empty($linkageRecord['sequenceNo'])) {
+                return $linkageRecord['sequenceNo'];
+            }
+            \REDCap::logEvent("OnCore Subject Sequence Number not found for protocol subject id $protocolSubjectId", json_encode($linkageRecord), null, null, null, $projectId); 
+            $response = $this->getUser()->get('protocolSubjectOnStudy/' . $protocolSubjectId);        
+            if ($response->getStatusCode() < 300) {
+                $data = json_decode($response->getBody(), true);
+                return empty($data) ? '' : $data['sequenceNo'];
+            }
+        } catch (GuzzleException $e) {
+            $response = $e->getResponse();
+            $responseBodyAsString = json_decode($response->getBody()->getContents(), true);
+            throw new \Exception($responseBodyAsString['message']);
+        } catch (\Exception $e) {
+            Entities::createException($e->getMessage());
+            echo $e->getMessage();
+        }
     }
 
     /**

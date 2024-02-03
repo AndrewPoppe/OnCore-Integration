@@ -406,6 +406,11 @@ class OnCoreIntegration extends \ExternalModules\AbstractExternalModule
                     'type' => 'integer',
                     'required' => false,
                 ],
+                'sequenceNo' => [
+                    'name' => 'Sequence Number',
+                    'type' => 'integer',
+                    'required' => false,
+                ],
                 'oncore_protocol_subject_status' => [
                     'name' => 'OnCore Protocol Subject Status (On/Off Study)',
                     'type' => 'integer',
