@@ -1193,6 +1193,7 @@ class OnCoreIntegration extends \ExternalModules\AbstractExternalModule
                 $this->setProtocols(new Protocols($this->getUsers(), $this->getMapping(), $project_id));
 
                 // run auto pull
+                Entities::createLog("Running auto-pull for project $project_id");
                 $this->getProtocols()->autoPullFromOnCore();
         
             } catch (\Throwable $e) {
