@@ -2,6 +2,7 @@
 
 namespace Stanford\OnCoreIntegration;
 
+use \ExternalModules\ExternalModules;
 use \Exception;
 use \GuzzleHttp;
 use GuzzleHttp\Exception\GuzzleException;
@@ -268,7 +269,7 @@ class Subjects extends SubjectDemographics
         if ($this->getRedcapProjectRecords()) {
             foreach ($this->getRedcapProjectRecords() as $id => $record) {
                 if ($id == $recordId) {
-                    $record[\REDCap::getRecordIdField()] = $id;
+                    $record[ExternalModules::getRecordIdField(null)] = $id;
                     return $record;
                 }
             }
@@ -500,7 +501,6 @@ class Subjects extends SubjectDemographics
             if (!empty($linkageRecord['sequenceNo'])) {
                 return $linkageRecord['sequenceNo'];
             }
-            \REDCap::logEvent("OnCore Subject Sequence Number not found for protocol subject id $protocolSubjectId", json_encode($linkageRecord), null, null, null, $projectId); 
             $response = $this->getUser()->get('protocolSubjectOnStudy/' . $protocolSubjectId);        
             if ($response->getStatusCode() < 300) {
                 $data = json_decode($response->getBody(), true);
@@ -1031,7 +1031,7 @@ class Subjects extends SubjectDemographics
     public function updateREDCapWithProtocolSubjectId($linkage, $fields, $protocolSubjectId)
     {
         $data = array(
-            \REDCap::getRecordIdField() => $linkage['redcap_record_id'],
+            ExternalModules::getRecordIdField($linkage['redcap_project_id']) => $linkage['redcap_record_id'],
             $fields['pull']['protocolSubjectId']['redcap_field'] => $protocolSubjectId,
             'redcap_event_name' => $fields['pull']['protocolSubjectId']['event']
         );
@@ -1085,9 +1085,9 @@ class Subjects extends SubjectDemographics
         if ($this->getSubjectsLock($projectId)) {
             foreach ($data as $event => $array) {
                 if (!$id) {
-                    $array[\REDCap::getRecordIdField()] = \REDCap::reserveNewRecordId($projectId);
+                    $array[ExternalModules::getRecordIdField($projectId)] = \REDCap::reserveNewRecordId($projectId);
                 } else {
-                    $array[\REDCap::getRecordIdField()] = $id;
+                    $array[ExternalModules::getRecordIdField($projectId)] = $id;
                 }
                 $array['redcap_event_name'] = $event;
                 // TODO uncheck current checkboxes.

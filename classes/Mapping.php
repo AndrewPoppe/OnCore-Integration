@@ -261,7 +261,7 @@ class Mapping
         $result = [];
 
         // make sure to add primary record id.
-        $result[] = \REDCap::getRecordIdField();
+        $result[] = $this->module->framework->getRecordIdField();
 
         foreach ($mapping['pull'] as $item) {
             if (!in_array($item['redcap_field'], $result)) {

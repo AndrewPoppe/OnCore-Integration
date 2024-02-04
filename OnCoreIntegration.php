@@ -1164,19 +1164,25 @@ class OnCoreIntegration extends \ExternalModules\AbstractExternalModule
      */
     public function onCoreAutoPullCron()
     {
-        $projects = self::query("select project_id from redcap_external_module_settings where `key` = 'enable-auto-pull' AND `value` = 'true'", []);
-
-        // manually set users to make guzzle calls.
-        if (!$this->users) {
-            $this->setUsers(new Users($this->getProjectId(), $this->PREFIX, $this->framework->getUser(), $this->getCSRFToken()));
-        }
-
+        $projects = $this->query("select project_id from redcap_external_module_settings where `key` = 'enable-auto-pull' AND `value` = 'true'", []);
+        $original_pid = $_GET['pid'];
         while ($project = $projects->fetch_assoc()) {
-            $id = $project['project_id'];
-            $url = $this->getUrl("ajax/cron.php", true, true) . '&pid=' . $id . '&action=auto_pull';
-            $this->getUsers()->getGuzzleClient()->get($url, array(\GuzzleHttp\RequestOptions::SYNCHRONOUS => true));
-            $this->emDebug("running cron for $url on project " . $project['app_title']);
+            // Set project context
+            $_GET['pid'] = $project['project_id'];
+            try {
+                // manually set users and protocols
+                $this->setUsers(new Users($project['project_id'], $this->PREFIX, null, $this->getCSRFToken()));
+                $this->setProtocols(new Protocols($this->getUsers(), $this->getMapping(), $project['project_id']));
+
+                // run auto pull
+                $this->getProtocols()->autoPullFromOnCore();
+        
+            } catch (\Throwable $e) {
+                \REDCap::logEvent('CRON JOB ERROR: ', $e->getMessage());
+                Entities::createException('CRON JOB ERROR: ' . $e->getMessage());
+            } 
         }
+        $_GET['pid'] = $original_pid;
     }
 
     public function onCoreProtocolsSubjectsScanCron()

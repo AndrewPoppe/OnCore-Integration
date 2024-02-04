@@ -284,7 +284,7 @@ class Protocols
                             if (!$redcapProtocolSubjectId) {
                                 // for new records update redcap and add new subject protocol id. then sync it with the subject.
                                 $data = [];
-                                $data[\REDCap::getRecordIdField()] = $item['id'];
+                                $data[ExternalModules::getRecordIdField($this->getEntityRecord()['redcap_project_id'])] = $item['id'];
                                 $data[$fields['pull']['protocolSubjectId']['redcap_field']] = $subject['protocolSubjectId'];
                                 $data['redcap_event_name'] = OnCoreIntegration::getEventNameUniqueId($fields['pull']['protocolSubjectId']['event']);
                                 $response = \REDCap::saveData($this->getEntityRecord()['redcap_project_id'], 'json', json_encode(array($data)));
