@@ -1164,15 +1164,33 @@ class OnCoreIntegration extends \ExternalModules\AbstractExternalModule
      */
     public function onCoreAutoPullCron()
     {
+        // Only create REDCap records in projects that:
+        // 1. have the module enabled
+        // 2. have auto-pull enabled
+        // 3. have a protocol linked
+        $enabledProjects = $this->getProjectsWithModuleEnabled();
         $projects = $this->query("select project_id from redcap_external_module_settings where `key` = 'enable-auto-pull' AND `value` = 'true'", []);
         $original_pid = $_GET['pid'];
         while ($project = $projects->fetch_assoc()) {
+            $project_id = $project['project_id'];
+
+            // skip projects that don't have the module enabled
+            if (!in_array($project_id, $enabledProjects)) {
+                continue;
+            }
+
+            // skip projects that don't have an active linkage to an oncore protocol
+            $protocol = Protocols::getOnCoreProtocolEntityRecord($project_id);
+            if (empty($protocol) || $protocol['status'] != self::ONCORE_PROTOCOL_STATUS_YES) {
+                continue;
+            }
+
             // Set project context
-            $_GET['pid'] = $project['project_id'];
+            $_GET['pid'] = $project_id;
             try {
                 // manually set users and protocols
-                $this->setUsers(new Users($project['project_id'], $this->PREFIX, null, $this->getCSRFToken()));
-                $this->setProtocols(new Protocols($this->getUsers(), $this->getMapping(), $project['project_id']));
+                $this->setUsers(new Users($project_id, $this->PREFIX, null, $this->getCSRFToken()));
+                $this->setProtocols(new Protocols($this->getUsers(), $this->getMapping(), $project_id));
 
                 // run auto pull
                 $this->getProtocols()->autoPullFromOnCore();
@@ -1870,5 +1888,56 @@ class OnCoreIntegration extends \ExternalModules\AbstractExternalModule
                 }
             }
         }
+    }
+
+    /**
+     * Get all projects that have the module enabled, including projects in which the module is enabled by default.
+     * 
+     * Note: Prior to EM Framework version 15, the framework method did not return projects in which the module is 
+     * enabled by default. Once the minimum EM Framework version is 15, this method can be removed in favor of the 
+     * framework method.
+     * 
+     * @return array An array of project IDs in which the module is enabled.
+     */
+    public function getProjectsWithModuleEnabled() {
+        $includeEnabledByDefault = $this->getSystemSetting(\ExternalModules\ExternalModules::KEY_ENABLED);
+        $sql = "
+			SELECT CAST(s.project_id AS CHAR) AS project_id
+			FROM redcap_external_modules m
+			JOIN redcap_external_module_settings s
+				ON m.external_module_id = s.external_module_id
+			JOIN redcap_projects p
+				ON s.project_id = p.project_id
+			WHERE
+				m.directory_prefix = ?
+				AND s.key = ?
+				AND s.value = ?
+		";
+
+		$params = [$this->getPrefix(), \ExternalModules\ExternalModules::KEY_ENABLED];
+
+		if ($includeEnabledByDefault) {
+			$sql = "
+				SELECT CAST(p.project_id as CHAR) AS project_id
+				FROM redcap_projects p
+				WHERE p.project_id NOT IN ($sql)
+			";
+
+			$params[] = 'false';
+		}
+		else{
+			$params[] = 'true';
+		}
+
+		$sql .= \ExternalModules\ExternalModules::getActiveProjectWhereClauses();
+
+		$results = $this->query($sql, $params);
+
+		$pids = [];
+		while($row = $results->fetch_assoc()) {
+			$pids[] = $row['project_id'];
+		}
+
+		return $pids;
     }
 }
