@@ -1168,7 +1168,7 @@ class OnCoreIntegration extends \ExternalModules\AbstractExternalModule
         // 2. have auto-pull enabled
         // 3. have a protocol linked
         $enabledProjects = $this->getProjectsWithModuleEnabled();
-        $projects = $this->query("select project_id from redcap_external_module_settings where `key` = 'enable-auto-pull' AND `value` = 'true'", []);
+        $projects = $this->query("select project_id from redcap_external_module_settings where `key` = 'enable-auto-pull' AND `value` in ('true', '1')", []);
         $original_pid = $_GET['pid'];
         while ($project = $projects->fetch_assoc()) {
             $project_id = $project['project_id'];
