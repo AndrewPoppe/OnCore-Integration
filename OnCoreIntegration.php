@@ -218,9 +218,8 @@ class OnCoreIntegration extends \ExternalModules\AbstractExternalModule
     public function redcap_every_page_top($project_id)
     {
         try {
-            // in case we are loading record homepage load its the record children if existed
-            preg_match('/redcap_v[\d\.].*\/index\.php/m', $_SERVER['SCRIPT_NAME'], $matches, PREG_OFFSET_CAPTURE);
-            if (strpos($_SERVER['SCRIPT_NAME'], 'ProjectSetup') !== false || !empty($matches)) {
+            // Initiate protocol and inject UI only on ProjectSetup page and Module pages 
+            if (strpos($_SERVER['SCRIPT_NAME'], 'ProjectSetup') !== false || $this->framework->isModulePage()) {
                 //TODO MAY NEED TO MOVE PROTOCOL INITIATION TO __construct
                 $this->initiateProtocol();
 
