@@ -1933,7 +1933,11 @@ class OnCoreIntegration extends \ExternalModules\AbstractExternalModule
 			$params[] = 'true';
 		}
 
-		$sql .= \ExternalModules\ExternalModules::getActiveProjectWhereClauses();
+		$sql .= "
+            AND p.date_deleted IS NULL
+            AND p.status IN (0,1) 
+            AND p.completed_time IS NULL
+        ";
 
 		$results = $this->query($sql, $params);
 
