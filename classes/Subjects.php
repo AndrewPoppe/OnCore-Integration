@@ -55,6 +55,7 @@ class Subjects extends SubjectDemographics
     private $mapping;
 
     public $forceDemographicsPull = false;
+    public $forceSequencePull = false;
 
     /**
      * The top functions can be used to query and verify MRNs in the home institution's Electronic
@@ -385,7 +386,7 @@ class Subjects extends SubjectDemographics
                                 $subjects[$key]['demographics']['studySites'] = $subject['studySite'];
 
                                 // pull in the subject's sequence number
-                                $subjects[$key]['sequenceNo'] = $this->getOnCoreSubjectSequenceNumber($subject['protocolSubjectId'], $protocolId);
+                                $subjects[$key]['sequenceNo'] = $this->getOnCoreSubjectSequenceNumber($subject['protocolSubjectId'], $protocolId, $this->forceSequencePull);
                             } catch (\Exception $e) {
                                 Entities::createException($e->getMessage());
                             }
@@ -493,12 +494,12 @@ class Subjects extends SubjectDemographics
      * Pull subject's sequence number from OnCore based on the protocol subject id
      * @return string|null - the sequence number or null on error 
      */
-    public function getOnCoreSubjectSequenceNumber($protocolSubjectId, $protocolId)
+    public function getOnCoreSubjectSequenceNumber($protocolSubjectId, $protocolId, $forceSequencePull = false)
     {
         $projectId = $this->getUser()->redcapProjectId;
         $linkageRecord = $this->getLinkageRecord($projectId, $protocolId, '', $protocolSubjectId);
         try {
-            if (!empty($linkageRecord['sequenceNo'])) {
+            if (!empty($linkageRecord['sequenceNo']) && $forceSequencePull !== true) {
                 return $linkageRecord['sequenceNo'];
             }
             $response = $this->getUser()->get('protocolSubjectOnStudy/' . $protocolSubjectId);        

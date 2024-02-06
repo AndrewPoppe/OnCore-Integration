@@ -1191,6 +1191,10 @@ class OnCoreIntegration extends \ExternalModules\AbstractExternalModule
                 $this->setUsers(new Users($project_id, $this->PREFIX, null, $this->getCSRFToken()));
                 $this->setProtocols(new Protocols($this->getUsers(), $this->getMapping(), $project_id));
 
+                // force pull subjects, including sequence numbers
+                $this->getProtocols()->getSubjects()->setOnCoreProtocolSubjects(null, true);
+                $this->getProtocols()->getSubjects()->forceSequencePull = true;
+
                 // run auto pull
                 Entities::createLog("Running auto-pull for project $project_id");
                 $this->getProtocols()->autoPullFromOnCore();

@@ -862,8 +862,12 @@ class Protocols
             $subjects = $this->getSubjects()->getOnCoreProtocolSubjects($this->getEntityRecord()['oncore_protocol_id']);
             foreach ($subjects as $subject) {
                 $linkage = $this->getSubjects()->getLinkageRecord($this->getEntityRecord()['redcap_project_id'], $this->getEntityRecord()['oncore_protocol_id'], '', $subject['protocolSubjectId']);
-                // if linkage record exists ignore it
-                if ($linkage) {
+                // if linkage record exists but sequence numbers don't match, update sequence number.
+                if ($linkage && $linkage['sequenceNo'] != $subject['sequenceNo']) {
+                    $linkage['sequenceNo'] = $subject['sequenceNo'];
+                    $this->getSubjects()->updateLinkageRecord($linkage['id'], $linkage);
+                } elseif ($linkage) {
+                    // Otherwise, if linkage record exists ignore it
                     continue;
                 } else {
                     $data = array(
