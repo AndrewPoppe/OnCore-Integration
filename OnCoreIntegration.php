@@ -219,7 +219,7 @@ class OnCoreIntegration extends \ExternalModules\AbstractExternalModule
     {
         try {
             // Initiate protocol and inject UI only on ProjectSetup page and Module pages 
-            if (strpos($_SERVER['SCRIPT_NAME'], 'ProjectSetup') !== false || $this->framework->isModulePage()) {
+            if (strpos($_SERVER['SCRIPT_NAME'], 'ProjectSetup') !== false || $this->isModulePage()) {
                 //TODO MAY NEED TO MOVE PROTOCOL INITIATION TO __construct
                 $this->initiateProtocol();
 
@@ -1943,5 +1943,31 @@ class OnCoreIntegration extends \ExternalModules\AbstractExternalModule
 		}
 
 		return $pids;
+    }
+
+    /**
+     * Determine whether the provided path is provided by this module
+     * 
+     * Note: Prior to REDCap ~v14, this framework method did not exist.
+     * 
+     * @return bool
+     */
+    function isModulePage($path = null): bool{
+        if (method_exists($this->framework, 'isModulePage')) {
+            return $this->framework->isModulePage($path);
+        }
+        $page = $_GET["page"] ?? null;
+
+        if(
+            !starts_with($_SERVER['REQUEST_URI'], APP_URL_EXTMOD_RELATIVE . '?')
+            ||
+            $this->getPrefix() !== \ExternalModules\ExternalModules::getPrefix()
+            ||
+            empty($page)
+        ){
+            return false;
+        }
+        
+        return $path === null || $path === $page;
     }
 }
