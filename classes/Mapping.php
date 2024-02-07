@@ -47,16 +47,6 @@ class Mapping
 
         # set study sites list from whatever user picked in mapping page.
         $field_list["studySites"]['oncore_valid_values'] = $study_sites;
-
-        # add sequence number to the list
-        $field_list["sequenceNo"] = [
-            'alias' => '',
-            'allow_default' => 'false',
-            'description' => 'Sequence Number',
-            'oncore_field_type' => ['string'],
-            'oncore_valid_values' => [],
-            'required' => 'false'
-        ];
         return $field_list;
     }
 
