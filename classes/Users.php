@@ -150,7 +150,8 @@ class Users extends Clients
         }
         // when role bypass is not acticated and user
         if(!$this->canBypassUserRoleRestriction()){
-            Entities::createDebugLog('EM could not find a Protocol Staff for ' . $redcapUsername . '. User must confirm "Staff ID" is configured for his/her OnCore Contact.', true);
+            $message = 'EM could not find a Protocol Staff for ' . $redcapUsername . '. User must confirm `Staff ID` is configured for his/her OnCore Contact.';
+            Entities::createDebugLog($message, true, true);
             #throw new \Exception('EM could not find a Protocol Staff for ' . $redcapUsername . '. User must confirm "Staff ID" is configured for his/her OnCore Contact.');
         }
         return [];
@@ -239,7 +240,9 @@ class Users extends Clients
                         if (empty($contact)) {
                             $message = 'System did not find demographic information for contact ID: ' . $staff['contactId'];
                             Entities::createLog($message);
-                            \REDCap::logEvent('OnCore API Error.', $message);
+                            $e = (new Entities);
+                            $e->emError('OnCore API Error.', $message);
+                            //\REDCap::logEvent('OnCore API Error.', $message);
                         } elseif (isset($contact['errorType'])) {
 //                            Entities::createLog($contact['message']);
 //                            \REDCap::logEvent($contact['message']);

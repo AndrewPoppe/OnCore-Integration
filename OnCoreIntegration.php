@@ -10,7 +10,6 @@ require_once 'classes/Subjects.php';
 require_once 'classes/Mapping.php';
 
 /**
- * new commit
  * Class OnCoreIntegration
  * @package Stanford\OnCoreIntegration
  * @property \Stanford\OnCoreIntegration\Users $users;
@@ -134,12 +133,6 @@ class OnCoreIntegration extends \ExternalModules\AbstractExternalModule
     private $oncore_integrations;
     private $has_oncore_integrations;
 
-    public function __construct()
-    {
-        parent::__construct();
-        //$this->updateOnCoreSubjectsDemographics();
-        // Other code to run when object is instantiated
-    }
 
     public function redcap_save_record($project_id, $record, $instrument, $event_id, $group_id, $survey_hash, $response_id, $repeat_instance)
     {
@@ -233,7 +226,7 @@ class OnCoreIntegration extends \ExternalModules\AbstractExternalModule
                 }
             }
         } catch (\Exception $e) {
-            \REDCap::logEvent('Exception initiating OnCore Protocol.', $e->getMessage());
+            $this->emError('Exception initiating OnCore Protocol.', $e->getMessage());
         }
     }
 
@@ -885,8 +878,8 @@ class OnCoreIntegration extends \ExternalModules\AbstractExternalModule
                         // set the keys for redcap array
                         $arr = $record["redcap"];
 
-                        $mrn_event_id = $fields_event[$this->getMapping()->getProjectFieldMappings()['pull']['mrn']['redcap_field']];
-                        $mrn = $arr[$mrn_event_id][$this->getMapping()->getProjectFieldMappings()['pull']['mrn']['redcap_field']];
+                        $mrn_event_id = $fields_event[$this->getMapping()->getProjectFieldMappings()['push']['mrn']['redcap_field']];
+                        $mrn = $arr[$mrn_event_id][$this->getMapping()->getProjectFieldMappings()['push']['mrn']['redcap_field']];
 
                         $primary_field_event_id = $fields_event[\REDCap::getRecordIdField()];
                         $rc_id = $arr[$primary_field_event_id][\REDCap::getRecordIdField()];
@@ -1150,7 +1143,7 @@ class OnCoreIntegration extends \ExternalModules\AbstractExternalModule
 
         } catch (\Exception $e) {
 //            $this->emError($e->getMessage());
-            \REDCap::logEvent('CRON JOB ERROR: ', $e->getMessage());
+            $this->emError('CRON JOB ERROR: ', $e->getMessage());
             Entities::createException('CRON JOB ERROR: ' . $e->getMessage());
 
         }
@@ -1237,7 +1230,7 @@ class OnCoreIntegration extends \ExternalModules\AbstractExternalModule
 
         } catch (\Exception $e) {
 //            $this->emError($e->getMessage());
-            \REDCap::logEvent('CRON JOB ERROR: ', $e->getMessage());
+            $this->emError('CRON JOB ERROR: ', $e->getMessage());
             Entities::createException('CRON JOB ERROR: ' . $e->getMessage());
 
         }
@@ -1269,7 +1262,7 @@ class OnCoreIntegration extends \ExternalModules\AbstractExternalModule
 
         } catch (\Exception $e) {
 //            $this->emError($e->getMessage());
-            \REDCap::logEvent('CRON JOB ERROR: ', $e->getMessage());
+            $this->emError('CRON JOB ERROR: ', $e->getMessage());
             Entities::createException('CRON JOB ERROR: ' . $e->getMessage());
 
         }
